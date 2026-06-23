@@ -1,0 +1,1 @@
+var e=e=>!e||e<=0?`—`:e>=1e7?`₹${(e/1e7).toFixed(2)} Cr`:e>=1e5?`₹${(e/1e5).toFixed(1)}L`:`₹${e.toLocaleString(`en-IN`)}`;export{e as t};

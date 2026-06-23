@@ -1,0 +1,1 @@
+var e=[{id:1,name:`ADVANCE`,pct:40,gst:18},{id:2,name:`STAGEWISE A`,pct:30,gst:18},{id:3,name:`STAGEWISE B`,pct:25,gst:18},{id:4,name:`REMAINING`,pct:5,gst:18}];export{e as t};
