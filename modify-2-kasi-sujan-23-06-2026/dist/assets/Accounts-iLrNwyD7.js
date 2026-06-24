@@ -1,0 +1,1 @@
+import{t as e}from"./react-CcBvw7x6.js";import{nn as t}from"./index-Z32lPdCv.js";e();var n=t(),r=()=>(0,n.jsx)(`div`,{children:`Accounts`});export{r as default};

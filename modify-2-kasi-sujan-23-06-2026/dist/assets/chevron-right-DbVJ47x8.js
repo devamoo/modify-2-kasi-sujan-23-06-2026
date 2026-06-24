@@ -1,1 +1,0 @@
-import{Jt as e}from"./index-Divh7M0g.js";var t=e(`chevron-right`,[[`path`,{d:`m9 18 6-6-6-6`,key:`mthhwq`}]]);export{t};
