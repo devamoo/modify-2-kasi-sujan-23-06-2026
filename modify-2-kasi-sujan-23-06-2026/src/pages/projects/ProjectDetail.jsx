@@ -23,6 +23,7 @@ import {
   FiCamera,
   FiBarChart2,
   FiClock,
+  FiLock,
 } from "react-icons/fi";
 import { TableData } from "../../data/TableData";
 import { ClientTableData } from "../../data/ClientTableData";
@@ -635,17 +636,23 @@ const ProjectDetail = () => {
           {PROJECT_TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeProjectTab === tab.key;
+            const isAdvancePaid = milestones.some(m => m.id === 1 && m.status === "paid");
+            const isDisabled = tab.key !== "overview" && !isAdvancePaid;
             return (
               <button
                 key={tab.key}
+                disabled={isDisabled}
                 onClick={() => setActiveProjectTab(tab.key)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[12px] font-semibold whitespace-nowrap transition-all ${
-                  isActive
-                    ? "bg-select-blue text-white shadow-sm"
-                    : "text-text-muted hover:text-darkgray hover:bg-bg-soft"
+                  isDisabled
+                    ? "opacity-50 cursor-not-allowed text-text-muted hover:bg-transparent"
+                    : isActive
+                      ? "bg-select-blue text-white shadow-sm"
+                      : "text-text-muted hover:text-darkgray hover:bg-bg-soft"
                 }`}
+                title={isDisabled ? "Requires Advance Payment to unlock" : ""}
               >
-                <Icon size={14} />
+                {isDisabled ? <FiLock size={13} className="text-text-muted/70" /> : <Icon size={14} />}
                 {tab.label}
               </button>
             );

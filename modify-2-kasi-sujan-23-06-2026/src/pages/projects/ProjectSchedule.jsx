@@ -6,6 +6,7 @@ import {
   FiChevronUp,
   FiChevronDown,
   FiCheckCircle,
+  FiTrash2,
 } from "react-icons/fi";
 import Modal from "../../components/Modal";
 import { appendActivity } from "../../data/LeadStatusConfig";
@@ -42,6 +43,32 @@ const RAG_DOT = {
 const RoomModal = ({ room, started, onSave, onClose }) => {
   const [form, setForm] = useState(room);
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const updateWork = (idx, field, value) => {
+    setForm((f) => {
+      const works = [...(f.works || [])];
+      works[idx] = { ...works[idx], [field]: value };
+      const allDone = works.length > 0 && works.every((w) => w.status === "Done");
+      return { ...f, works, done: allDone ? true : f.done };
+    });
+  };
+
+  const addCustomWork = () => {
+    setForm((f) => ({
+      ...f,
+      works: [
+        ...(f.works || []),
+        { name: "New Phase", days: 1, status: "Not Started", owner: "" }
+      ]
+    }));
+  };
+
+  const removeWork = (idx) => {
+    setForm((f) => ({
+      ...f,
+      works: (f.works || []).filter((_, i) => i !== idx)
+    }));
+  };
 
   // A room can only be marked done once its work has actually started:
   // the booking must be paid AND today must be on/after this room's start date.
@@ -109,6 +136,79 @@ const RoomModal = ({ room, started, onSave, onClose }) => {
             Scope &amp; duration come from the proposal and aren&apos;t edited
             here.
           </p>
+        </div>
+
+        {/* Granular Sub-task phase list */}
+        <div className="border border-bordergray rounded-xl p-3 bg-bg-soft/40">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10.5px] font-bold text-text-subtle uppercase tracking-wider">
+              Interior Work Phases / Items
+            </p>
+            <button
+              type="button"
+              onClick={addCustomWork}
+              className="text-[11px] font-bold text-select-blue hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              + Add Item
+            </button>
+          </div>
+          
+          <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
+            {(form.works || []).map((w, idx) => (
+              <div key={idx} className="flex items-center gap-2 border border-bordergray rounded-lg p-2 bg-white group">
+                <input
+                  value={w.name || ""}
+                  onChange={(e) => updateWork(idx, "name", e.target.value)}
+                  placeholder="Phase name"
+                  className="flex-1 min-w-0 bg-transparent text-[11.5px] font-semibold text-textcolor focus:outline-none focus:border-b focus:border-select-blue"
+                />
+                
+                <div className="flex items-center gap-0.5 shrink-0">
+                  <input
+                    type="number"
+                    min="1"
+                    value={w.days || ""}
+                    onChange={(e) => updateWork(idx, "days", parseInt(e.target.value) || 0)}
+                    placeholder="Days"
+                    className="w-8 bg-transparent text-[11.5px] text-center text-textcolor focus:outline-none focus:border-b focus:border-select-blue"
+                  />
+                  <span className="text-[9px] text-text-subtle">d</span>
+                </div>
+
+                <select
+                  value={w.status || "Not Started"}
+                  onChange={(e) => updateWork(idx, "status", e.target.value)}
+                  className="text-[10px] bg-white border border-bordergray rounded px-1 py-0.5 text-textcolor focus:outline-none font-semibold"
+                >
+                  <option value="Not Started">Not Started</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Done">Done</option>
+                  <option value="Blocked">Blocked</option>
+                </select>
+
+                <input
+                  value={w.owner || ""}
+                  onChange={(e) => updateWork(idx, "owner", e.target.value)}
+                  placeholder="Assignee"
+                  className="w-14 bg-transparent text-[10px] text-textcolor focus:outline-none focus:border-b focus:border-select-blue"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => removeWork(idx)}
+                  className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity shrink-0 cursor-pointer"
+                >
+                  <FiTrash2 size={12} />
+                </button>
+              </div>
+            ))}
+
+            {(form.works || []).length === 0 && (
+              <p className="text-[11px] text-text-subtle italic text-center py-2">
+                No individual work items. Click Add Item to start tracking phases.
+              </p>
+            )}
+          </div>
         </div>
 
         <label
@@ -867,23 +967,83 @@ const ProjectSchedule = ({ lead }) => {
                       )}
                     </p>
                     {r.works?.length ? (
-                      <div className="mt-1 space-y-0.5">
-                        {r.works.map((w, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center justify-between gap-3 max-w-[280px] text-[11.5px] text-text-muted"
-                          >
-                            <span className="truncate">• {w.name}</span>
-                            {w.days ? (
-                              <span className="text-text-subtle shrink-0 tabular-nums">
-                                {w.days}d
+                      <div className="mt-1.5 w-full max-w-[340px]">
+                        {/* Completion progress bar */}
+                        {(() => {
+                          const done = r.works.filter((w) => w.status === "Done").length;
+                          const total = r.works.length;
+                          const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                          return (
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <div className="w-[100px] h-1.5 bg-gray-100 rounded-full overflow-hidden shrink-0">
+                                <div
+                                  className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                              <span className="text-[9.5px] font-bold text-text-muted">
+                                {done}/{total} Done ({pct}%)
                               </span>
-                            ) : null}
-                          </div>
-                        ))}
+                            </div>
+                          );
+                        })()}
+
+                        {/* Individual work items status checklist */}
+                        <div className="mt-1.5 space-y-1 pl-2 border-l-2 border-bordergray">
+                          {r.works.map((w, i) => {
+                            const isDone = w.status === "Done";
+                            const isBlocked = w.status === "Blocked";
+                            const isInProgress = w.status === "In Progress";
+                            const color = isDone
+                              ? "text-emerald-700 bg-emerald-50"
+                              : isBlocked
+                                ? "text-red-700 bg-red-50"
+                                : isInProgress
+                                  ? "text-blue-700 bg-blue-50"
+                                  : "text-gray-500 bg-gray-100";
+                            
+                            const dotColor = isDone
+                              ? "bg-emerald-500"
+                              : isBlocked
+                                ? "bg-red-500"
+                                : isInProgress
+                                  ? "bg-blue-500"
+                                  : "bg-gray-400";
+
+                            return (
+                              <div
+                                key={i}
+                                className="flex items-center justify-between gap-3 text-[10.5px] text-text-muted py-0.5"
+                              >
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} />
+                                  <span className={`truncate ${isDone ? "line-through text-text-subtle" : ""}`}>
+                                    {w.name}
+                                  </span>
+                                  {w.days ? (
+                                    <span className="text-text-subtle text-[9px] shrink-0 font-medium bg-bg-soft px-1 rounded">
+                                      {w.days}d
+                                    </span>
+                                  ) : null}
+                                </div>
+                                
+                                <div className="flex items-center gap-1 shrink-0">
+                                  {w.owner && (
+                                    <span className="text-[9px] text-text-subtle bg-bg-soft px-1 rounded truncate max-w-[50px]">
+                                      {w.owner}
+                                    </span>
+                                  )}
+                                  <span className={`px-1 py-0.2 rounded text-[8.5px] font-bold uppercase ${color}`}>
+                                    {w.status || "Not Started"}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     ) : r.description ? (
-                      <p className="text-[11.5px] text-text-muted truncate">
+                      <p className="text-[11.5px] text-text-muted truncate mt-1">
                         {r.description}
                       </p>
                     ) : null}
