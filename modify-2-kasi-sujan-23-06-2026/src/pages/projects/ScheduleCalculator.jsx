@@ -118,11 +118,10 @@ const ScheduleCalculator = ({ lead }) => {
             <div className="flex mb-1 ml-[140px]" style={{ width: `${ganttRange.days * 8}px`, minWidth: "100%" }}>
               {Array.from({ length: ganttRange.days }, (_, i) => {
                 const d = new Date(ganttRange.start); d.setDate(d.getDate() + i);
-                const isSun = d.getDay() === 0;
                 const show = i === 0 || d.getDate() === 1 || d.getDate() === 15;
                 return (
                   <div key={i} className="flex-1 min-w-[8px] text-center" style={{ minWidth: 8 }}>
-                    {show && <span className={`text-[8px] ${isSun ? "text-red-400" : "text-text-subtle"}`}>{d.getDate()}/{d.getMonth() + 1}</span>}
+                    {show && <span className="text-[8px] text-text-subtle">{d.getDate()}/{d.getMonth() + 1}</span>}
                   </div>
                 );
               })}
@@ -219,9 +218,9 @@ const ScheduleCalculator = ({ lead }) => {
       {/* Resource Calendar */}
       <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)]">
         <h4 className="text-[14px] font-bold text-darkgray mb-3">Working Days Calendar</h4>
-        <p className="text-[11px] text-text-muted mb-3">Sundays are non-working days (shown in red). All other days are working days.</p>
+        <p className="text-[11px] text-text-muted mb-3">Sundays are included as working days. Every day is a working day.</p>
         <div className="grid grid-cols-7 gap-1">
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (<div key={d} className={`text-[10px] font-bold text-center py-1 ${d === "Sun" ? "text-red-400" : "text-text-subtle"}`}>{d}</div>))}
+          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (<div key={d} className="text-[10px] font-bold text-center py-1 text-text-subtle">{d}</div>))}
           {(() => {
             const now = new Date(); const y = now.getFullYear(); const m = now.getMonth();
             const first = new Date(y, m, 1); const last = new Date(y, m + 1, 0);
@@ -229,10 +228,9 @@ const ScheduleCalculator = ({ lead }) => {
             const cells = [];
             for (let i = 0; i < startDay; i++) cells.push(<div key={`e${i}`} />);
             for (let d = 1; d <= last.getDate(); d++) {
-              const date = new Date(y, m, d); const isSun = date.getDay() === 0;
               const isT = d === now.getDate();
               cells.push(
-                <div key={d} className={`text-[10px] text-center py-1.5 rounded-lg ${isSun ? "bg-red-50 text-red-400 line-through" : "bg-bg-soft text-textcolor"} ${isT ? "ring-2 ring-select-blue font-bold" : ""}`}>{d}</div>
+                <div key={d} className={`text-[10px] text-center py-1.5 rounded-lg bg-bg-soft text-textcolor ${isT ? "ring-2 ring-select-blue font-bold" : ""}`}>{d}</div>
               );
             }
             return cells;

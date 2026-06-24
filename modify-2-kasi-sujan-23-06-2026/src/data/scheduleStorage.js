@@ -117,7 +117,8 @@ export function getOrSeedSchedule(lead) {
 
 // ── Working-day math ─────────────────────────────────────────────────────────
 // Only Sunday is off; Saturday is a working day.
-const isNonWorkingDay = (d) => d.getDay() === 0;
+// Upgraded: Sunday is now included as a working day (not skipped).
+const isNonWorkingDay = (d) => false;
 
 function nextWorkingDay(date) {
   const d = new Date(date);

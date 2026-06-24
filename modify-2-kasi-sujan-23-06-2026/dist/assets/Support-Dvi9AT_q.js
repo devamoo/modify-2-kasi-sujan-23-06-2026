@@ -1,0 +1,1 @@
+import{t as e}from"./react-CcBvw7x6.js";import{nn as t}from"./index-Czusq2Od.js";e();var n=t(),r=()=>(0,n.jsx)(`div`,{children:`Support`});export{r as default};
